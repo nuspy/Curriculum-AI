@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AutoJob — Cockpit</title>
+  <script src="https://unpkg.com/htmx.org@2.0.3"></script>
+  <style>
+    :root { --bg:#0f1419; --card:#1a2029; --fg:#e6e9ef; --mut:#8a93a3; --acc:#4da3ff; }
+    body { margin:0; font:14px system-ui,sans-serif; background:var(--bg); color:var(--fg); }
+    header { padding:14px 20px; border-bottom:1px solid #262c36; }
+    h1 { font-size:18px; margin:0; }
+    nav { display:flex; gap:8px; padding:10px 20px; border-bottom:1px solid #262c36; }
+    nav button { background:var(--card); color:var(--fg); border:1px solid #2c333d; padding:8px 14px; border-radius:8px; cursor:pointer; }
+    nav button:hover { border-color:var(--acc); }
+    #content { padding:18px 20px; }
+    table { width:100%; border-collapse:collapse; }
+    th,td { text-align:left; padding:8px 10px; border-bottom:1px solid #262c36; }
+    th { color:var(--mut); font-weight:600; }
+    button.act { background:var(--acc); color:#04121f; border:0; padding:6px 12px; border-radius:6px; cursor:pointer; }
+    .chip { display:inline-block; background:var(--card); border:1px solid #2c333d; border-radius:12px; padding:2px 9px; margin:2px; }
+    .card { background:var(--card); border:1px solid #2c333d; border-radius:8px; padding:10px 12px; margin:8px 0; }
+    .prov { font-size:11px; border-radius:6px; padding:1px 7px; }
+    .prov-certain { background:#13361f; color:#5fd38a; }
+    .prov-declared { background:#13283f; color:#6fb6ff; }
+    .prov-inferred { background:#3a3413; color:#e6cf5a; }
+    .prov-missing { background:#3a1717; color:#ff8a8a; }
+    a { color:var(--acc); }
+  </style>
+</head>
+<body>
+  <header><h1>AutoJob — Cockpit</h1></header>
+  <nav>
+    <button hx-get="/ui/matches" hx-target="#content">Match</button>
+    <button hx-get="/ui/profile" hx-target="#content">Profilo</button>
+    <button hx-get="/ui/interventions" hx-target="#content">Interventi</button>
+    <button hx-get="/ui/applications" hx-target="#content">Candidature</button>
+  </nav>
+  <div id="content" hx-get="/ui/matches" hx-trigger="load">Caricamento…</div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<h3>Match ({{ matches|length }})</h3>
+<table>
+  <thead>
+    <tr><th>Titolo</th><th>Azienda</th><th>Score</th><th>Crit.</th><th>Prob.</th><th>Stato</th><th>Motivi</th><th></th></tr>
+  </thead>
+  <tbody>
+  {% for m in matches %}
+    <tr>
+      <td>{{ m.title or '-' }}{% if m.url %} <a href="{{ m.url }}" target="_blank" rel="noopener">&#8599;</a>{% endif %}</td>
+      <td>{{ m.company or '-' }}</td>
+      <td><b>{{ m.score_total }}</b></td>
+      <td>{{ m.criticality or '-' }}</td>
+      <td>{{ '%.0f%%' | format((m.success_probability or 0) * 100) }}</td>
+      <td>{{ m.status }}{% if m.authorized %} &#9989;{% endif %}</td>
+      <td>{{ (m.reasons or [])|join(', ') }}</td>
+      <td>
+        <form hx-post="/api/matches/{{ m.match_id }}/authorize" hx-target="#content" hx-swap="innerHTML">
+          <input type="hidden" name="authorized" value="{{ 'false' if m.authorized else 'true' }}">
+          <button class="act" type="submit">{{ 'Revoca' if m.authorized else 'Autorizza' }}</button>
+        </form>
+      </td>
+    </tr>
+  {% else %}
+    <tr><td colspan="8">Nessun match. Esegui una ricerca (run_search) o un ranking.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>

@@ -1,0 +1,21 @@
+{% set p = prof.profile %}
+<h3>Profilo</h3>
+<table>
+  {% for field in ['full_name', 'headline', 'email', 'phone', 'location', 'work_auth', 'summary'] %}
+    <tr>
+      <th style="width:140px">{{ field }}</th>
+      <td>{{ p[field] if p[field] else '&mdash;' | safe }}</td>
+      <td style="width:90px"><span class="prov prov-{{ prov.get(field, 'missing') }}">{{ prov.get(field, 'missing') }}</span></td>
+    </tr>
+  {% endfor %}
+</table>
+
+<h4>Skill ({{ prof.skills | length }})</h4>
+<div>{% for sk in prof.skills %}<span class="chip">{{ sk.name }}</span>{% endfor %}</div>
+
+<h4>Esperienze ({{ prof.work_experience | length }})</h4>
+<ul>
+  {% for w in prof.work_experience %}<li>{{ w.title or '-' }} &mdash; {{ w.company or '-' }} ({{ w.start_date or '?' }}&ndash;{{ w.end_date or 'oggi' }})</li>{% endfor %}
+</ul>
+
+<p style="color:var(--mut)">Legenda provenance: <span class="prov prov-certain">certain</span> dal CV &middot; <span class="prov prov-declared">declared</span> inserito &middot; <span class="prov prov-inferred">inferred</span> dedotto (da rivedere) &middot; <span class="prov prov-missing">missing</span> mancante.</p>

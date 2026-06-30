@@ -1,0 +1,65 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "autojob"
+version = "0.0.1"
+description = "Local, modular job search / evaluate / auto-apply system driven by a pluggable AI agent over MCP"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary" }
+authors = [{ name = "Andrea Taini" }]
+dependencies = [
+    "sqlalchemy>=2.0.30",
+    "alembic>=1.13",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+    "sqlite-vec>=0.1.6",
+    "loguru>=0.7",
+    "httpx>=0.27",
+    "pyyaml>=6.0",
+    "fastmcp>=2.3",
+    "pypdf>=4.0",
+    "python-docx>=1.1",
+    "playwright>=1.48",
+    "jinja2>=3.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+autojob = "autojob.cli:main"
+autojobd = "autojob.daemon.run:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/autojob"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/autojob/dashboard/templates" = "autojob/dashboard/templates"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-q"
+markers = [
+    "browser: test che avviano un chromium reale (Playwright); escludi con -m 'not browser'",
+]
+filterwarnings = [
+    'ignore:Using `httpx` with `starlette.testclient` is deprecated',
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]

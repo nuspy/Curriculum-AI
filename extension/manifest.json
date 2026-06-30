@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "AutoJob Bridge",
+  "version": "0.1.0",
+  "minimum_chrome_version": "116",
+  "description": "Bridge tra il daemon AutoJob e il browser: snapshot indicizzato, azioni, duplicate-guard.",
+  "permissions": ["tabs", "scripting", "storage", "alarms", "debugger", "webNavigation", "sidePanel"],
+  "host_permissions": ["<all_urls>"],
+  "background": { "service_worker": "src/background.js", "type": "module" },
+  "action": { "default_title": "AutoJob", "default_popup": "popup.html" },
+  "side_panel": { "default_path": "sidepanel.html" },
+  "options_page": "options.html"
+}

@@ -1,0 +1,15 @@
+{
+  "name": "autojob-marketplace",
+  "owner": { "name": "Andrea Taini" },
+  "metadata": {
+    "description": "Marketplace a singolo plugin per AutoJob.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "autojob",
+      "source": "./",
+      "description": "AutoJob — ricerca/valutazione/compilazione candidature locale via MCP (daemon, cockpit, estensione MV3)."
+    }
+  ]
+}

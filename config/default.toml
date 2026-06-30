@@ -1,0 +1,30 @@
+# AutoJob — valori di default di riferimento.
+# NB: la configurazione effettiva è gestita da pydantic-settings (src/autojob/config/settings.py):
+# gli override si passano via variabili d'ambiente con prefisso AUTOJOB_ o tramite file .env.
+# Questo file DOCUMENTA i default; non viene caricato automaticamente (evita la dipendenza
+# tomllib su Python 3.10).
+
+[daemon]
+host = "127.0.0.1"
+port = 8765
+log_level = "INFO"
+
+[storage]
+# db_path = "data/autojob.db"        # default: <repo>/data/autojob.db
+
+[embeddings]
+dim = 1024
+model = "bge-m3"
+base_url = "http://127.0.0.1:1234/v1"
+
+[llm]
+provider = "lm_studio"               # lm_studio | ollama | agent
+base_url = "http://127.0.0.1:1234/v1"
+model = ""
+
+[browser]
+driver = "fake"                      # cdp_mcp | claude_chrome | extension | fake
+
+[applications]
+submit_mode = "manual"               # manual | semi | auto
+reapply_policy = "warn"              # block | warn | allow

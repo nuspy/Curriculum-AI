@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>AutoJob — Opzioni</title>
+  <style>
+    body { font: 14px system-ui, sans-serif; margin: 16px; max-width: 480px; }
+    label { display: block; margin: 10px 0 4px; font-weight: 600; }
+    input { width: 100%; padding: 6px; box-sizing: border-box; }
+    button { margin-top: 14px; padding: 8px 14px; }
+    .msg { color: #2a7; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>AutoJob Bridge</h2>
+  <label for="token">Token (file <code>data/ext_token</code> del daemon)</label>
+  <input id="token" placeholder="incolla qui il token">
+  <label for="url">URL daemon (WebSocket)</label>
+  <input id="url" value="ws://127.0.0.1:8765/ext">
+  <button id="save">Salva</button>
+  <p class="msg" id="msg"></p>
+  <script src="options.js"></script>
+</body>
+</html>

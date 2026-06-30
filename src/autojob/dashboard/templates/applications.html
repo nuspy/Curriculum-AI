@@ -1,0 +1,11 @@
+<h3>Candidature ({{ apps | length }})</h3>
+<table>
+  <thead><tr><th>#</th><th>Titolo</th><th>Azienda</th><th>Stato</th><th>Modalita</th><th>Inviata</th></tr></thead>
+  <tbody>
+  {% for a in apps %}
+    <tr><td>{{ a.id }}</td><td>{{ a.title or '-' }}</td><td>{{ a.company or '-' }}</td><td>{{ a.status }}</td><td>{{ a.mode or '-' }}</td><td>{{ a.submitted_at or '&mdash;' | safe }}</td></tr>
+  {% else %}
+    <tr><td colspan="6">Nessuna candidatura registrata.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>

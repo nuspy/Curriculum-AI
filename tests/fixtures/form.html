@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Apply form</title></head>
+<body>
+  <h1>Application</h1>
+  <form id="main" action="/apply" method="post">
+    <label for="name">Full name</label>
+    <input id="name" name="name" type="text" required>
+
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" required>
+
+    <label for="cover">Cover letter</label>
+    <textarea id="cover" name="cover"></textarea>
+
+    <label for="sen">Seniority</label>
+    <select id="sen" name="sen">
+      <option value="mid">Mid</option>
+      <option value="senior">Senior</option>
+    </select>
+
+    <label><input type="checkbox" id="agree" name="agree" required> I agree to terms</label>
+
+    <label for="resume">Resume (PDF)</label>
+    <input type="file" id="resume" name="resume">
+
+    <button type="submit">Submit application</button>
+  </form>
+
+  <button id="opener" onclick="window.open('about:blank','_blank')">Open new tab</button>
+
+  <fieldset id="exp-list"><legend>Experience</legend></fieldset>
+  <button id="addexp" type="button" onclick="addExp()">Add experience</button>
+  <script>
+    let _n = 0;
+    function addExp() {
+      _n++;
+      const fs = document.createElement('fieldset');
+      fs.id = 'exp-' + _n;
+      fs.innerHTML = '<label for="company' + _n + '">Company ' + _n + '</label>' +
+                     '<input id="company' + _n + '" name="company' + _n + '" type="text">';
+      document.getElementById('exp-list').appendChild(fs);
+    }
+  </script>
+</body>
+</html>

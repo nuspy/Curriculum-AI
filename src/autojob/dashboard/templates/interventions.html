@@ -1,0 +1,11 @@
+<h3>Interventi in sospeso ({{ items | length }})</h3>
+{% for it in items %}
+  <div class="card">
+    <b>{{ it.type }}</b> &mdash; {{ it.prompt }}
+    <form hx-post="/api/interventions/{{ it.id }}/resolve" hx-target="#content" hx-swap="innerHTML" style="margin-top:6px">
+      <button class="act" type="submit">Risolto</button>
+    </form>
+  </div>
+{% else %}
+  <p style="color:var(--mut)">Nessun intervento in sospeso (CAPTCHA, login, dati mancanti).</p>
+{% endfor %}
