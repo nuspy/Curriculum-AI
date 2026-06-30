@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Sistema locale per cercare, valutare e compilare candidature di lavoro via MCP (daemon + cockpit + estensione MV3 + lifecycle LM Studio).",
   "author": { "name": "Andrea Taini" },
-  "homepage": "https://github.com/nuspy/AutoJob",
+  "homepage": "https://github.com/nuspy/Curriculum-AI",
   "keywords": ["jobs", "applications", "mcp", "automation", "local", "playwright"],
   "mcpServers": {
     "autojob": { "type": "http", "url": "http://127.0.0.1:8765/mcp/" }

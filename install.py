@@ -33,6 +33,53 @@ def step(msg: str) -> None:
     print(f"[autojob] {msg}")
 
 
+_BROWSER_CANDIDATES = [
+    r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+    r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+    r"C:\Program Files\Opera\opera.exe",
+]
+
+
+def _find_browser() -> str | None:
+    for name in ("chrome", "chrome.exe", "opera", "opera.exe", "msedge"):
+        p = shutil.which(name)
+        if p:
+            return p
+    local = Path.home() / "AppData" / "Local"
+    for cand in [*_BROWSER_CANDIDATES,
+                 str(local / "Google/Chrome/Application/chrome.exe"),
+                 str(local / "Programs/Opera/opera.exe")]:
+        if Path(cand).exists():
+            return cand
+    return None
+
+
+def print_extension_help(ext_dir: Path, token: Path) -> None:
+    print("\n[autojob] ESTENSIONE BROWSER (MV3) — caricamento manuale (Chrome non installa da CLI)")
+    print(f"   Cartella da caricare: {ext_dir}")
+    print("   1) chrome://extensions -> Modalita sviluppatore -> 'Carica estensione non pacchettizzata'")
+    print("      -> seleziona la cartella qui sopra")
+    print("   2) Opzioni estensione: incolla il token; URL ws://127.0.0.1:8765/ext")
+    if token.exists():
+        print(f"   Token: {token.read_text(encoding='utf-8').strip()}   (file: {token})")
+    else:
+        print(f"   Token: creato al primo avvio del daemon in {token}")
+    print("   3) imposta AUTOJOB_BROWSER_DRIVER=extension")
+    print(f'   Dev auto-load: chrome.exe --load-extension="{ext_dir}" --remote-debugging-port=9222')
+
+
+def launch_browser(ext_dir: Path) -> None:
+    exe = _find_browser()
+    args = [f"--load-extension={ext_dir}", "--remote-debugging-port=9222"]
+    if exe:
+        step(f"avvio browser con estensione caricata: {exe}")
+        subprocess.Popen([exe, *args])
+        print("   (browser avviato con --load-extension e --remote-debugging-port=9222)")
+    else:
+        print("   Browser non trovato sul PATH/percorsi noti. Avvialo manualmente:")
+        print(f'   chrome.exe --load-extension="{ext_dir}" --remote-debugging-port=9222')
+
+
 def check() -> int:
     step("CHECK ambiente (nessuna modifica)")
     items = {
@@ -97,6 +144,10 @@ def install(args: argparse.Namespace) -> int:
     print("   Token estensione:", str(token) if token.exists() else "(creato al primo avvio del daemon)")
     print("   Skill: /autojob   Comandi: /autojob-up /autojob-search /autojob-apply /autojob-status")
     print("   Manuale: how_to_use.md")
+
+    print_extension_help(REPO / "extension", token)
+    if args.launch_browser:
+        launch_browser(REPO / "extension")
     return 0
 
 
@@ -106,6 +157,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--no-daemon", action="store_true", help="non avviare il daemon")
     p.add_argument("--no-skills", action="store_true", help="non copiare la skill in ~/.claude/skills")
     p.add_argument("--no-browser", action="store_true", help="salta il download di chromium")
+    p.add_argument(
+        "--launch-browser", action="store_true",
+        help="avvia Chrome/Opera con l'estensione caricata + --remote-debugging-port=9222",
+    )
     p.add_argument(
         "--mcp-scope", choices=["user", "project", "none"], default="user",
         help="scope di registrazione del server MCP (default: user)",

@@ -56,8 +56,12 @@ Apri http://127.0.0.1:8765/ → tab **Match** (autorizza con un click), **Profil
 - `fake` — nessun browser (sviluppo/test).
 - `playwright` — automazione reale; per la **tua sessione loggata** avvia Chrome con
   `--remote-debugging-port=9222` e imposta `AUTOJOB_CDP_URL=http://127.0.0.1:9222`.
-- `extension` — carica `extension/` (vedi `extension/README.md`), incolla il token (`data/ext_token`)
-  nelle opzioni; usa la tua sessione reale e mostra il **badge duplicate-guard**.
+- `extension` — carica `extension/` non pacchettizzata da `chrome://extensions` (Modalità
+  sviluppatore → "Carica estensione non pacchettizzata"), incolla il token (`data/ext_token`) nelle
+  opzioni (URL `ws://127.0.0.1:8765/ext`); usa la tua sessione reale e mostra il **badge
+  duplicate-guard**. `install.py` stampa a fine installazione il **percorso assoluto** della cartella
+  e il **token**; `python install.py --launch-browser` avvia Chrome con l'estensione già caricata e
+  la debug port. Vedi anche `extension/README.md`.
 
 ## 7. LM Studio / embeddings
 Provider locale OpenAI-compatible su `:1234`. Con `AUTOJOB_LMS_AUTOSTART=1` (default) il daemon avvia
