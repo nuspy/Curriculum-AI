@@ -109,3 +109,40 @@
   automation_policy: semi
   tos_risk: med
   enabled: true
+# --- Golfo / UAE ---
+- name: Bayt
+  slug: bayt
+  base_url: https://www.bayt.com/
+  adapter_key: bayt
+  search_url_template: "https://www.bayt.com/en/uae/jobs/{keywords}-jobs/"
+  requires_account: false
+  automation_policy: semi
+  tos_risk: med
+  enabled: true
+- name: GulfTalent
+  slug: gulftalent
+  base_url: https://www.gulftalent.com/
+  adapter_key: gulftalent
+  search_url_template: "https://www.gulftalent.com/uae/jobs/title/{keywords}"
+  requires_account: false
+  automation_policy: semi
+  tos_risk: med
+  enabled: true
+- name: Naukrigulf
+  slug: naukrigulf
+  base_url: https://www.naukrigulf.com/
+  adapter_key: naukrigulf
+  search_url_template: "https://www.naukrigulf.com/{keywords}-jobs-in-dubai"
+  requires_account: false
+  automation_policy: semi
+  tos_risk: med
+  enabled: true
+- name: LinkedIn Jobs (UAE)
+  slug: linkedin_uae
+  base_url: https://www.linkedin.com/jobs/
+  adapter_key: linkedin
+  search_url_template: "https://www.linkedin.com/jobs/search/?keywords={keywords}&location=Dubai%2C%20United%20Arab%20Emirates"
+  requires_account: true
+  automation_policy: semi
+  tos_risk: extreme
+  enabled: true
