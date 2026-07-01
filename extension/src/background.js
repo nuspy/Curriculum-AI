@@ -172,26 +172,42 @@ function onAppliedStatus(msg) {
 }
 
 // ---- WS lifecycle ----
+let lastError = "";
 async function connect() {
   const { token, url } = await cfg();
-  if (!token) { console.log("[AutoJob] token mancante: aprire le opzioni dell'estensione"); return; }
-  try { ws = new WebSocket(url); } catch (e) { scheduleReconnect(); return; }
-  ws.onopen = () => { send({ v: 1, id: "auth", type: "auth", payload: { token, ext_version: "0.1.0", browser: "chrome" } }); };
+  if (!token) { lastError = "token mancante"; console.log("[AutoJob] token mancante: aprire le opzioni"); return; }
+  lastError = "connessione in corso…";
+  try { ws = new WebSocket(url); } catch (e) { lastError = "URL non valido: " + url; scheduleReconnect(); return; }
+  ws.onopen = () => { send({ v: 1, id: "auth", type: "auth", payload: { token, ext_version: "0.1.0", browser: "opera" } }); };
   ws.onmessage = (ev) => {
     let msg; try { msg = JSON.parse(ev.data); } catch (e) { return; }
-    if (msg.type === "auth_ok") { connected = true; backoff = 1000; console.log("[AutoJob] connesso al daemon"); }
-    else if (msg.type === "auth_err") { console.warn("[AutoJob] auth fallita:", msg.payload); }
+    if (msg.type === "auth_ok") { connected = true; lastError = ""; backoff = 1000; console.log("[AutoJob] connesso al daemon"); }
+    else if (msg.type === "auth_err") { connected = false; lastError = "token errato"; console.warn("[AutoJob] auth fallita:", msg.payload); }
     else if (msg.type === "applied_status") onAppliedStatus(msg);
     else if (typeof msg.type === "string" && msg.type.startsWith("cmd.")) handleCommand(msg);
   };
-  ws.onclose = () => { connected = false; scheduleReconnect(); };
-  ws.onerror = () => { try { ws.close(); } catch (e) {} };
+  ws.onclose = () => { connected = false; if (!lastError || lastError === "connessione in corso…") lastError = "daemon non raggiungibile su " + url; scheduleReconnect(); };
+  ws.onerror = () => { connected = false; lastError = "errore WebSocket (daemon spento o URL errato)"; try { ws.close(); } catch (e) {} };
 }
 
 function scheduleReconnect() {
   backoff = Math.min(backoff * 2, 30000);
   setTimeout(connect, backoff);
 }
+
+// Stato per il popup (auto-diagnosi)
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg && msg.type === "status") {
+    cfg().then((c) => sendResponse({ connected, hasToken: !!c.token, url: c.url, wsState: ws ? ws.readyState : -1, lastError }));
+    return true;
+  }
+  if (msg && msg.type === "reconnect") {
+    try { if (ws) ws.close(); } catch (e) {}
+    connect();
+    sendResponse({ ok: true });
+    return true;
+  }
+});
 
 chrome.alarms.create("keepalive", { periodInMinutes: 0.4 });
 chrome.alarms.onAlarm.addListener((a) => {

@@ -1,10 +1,20 @@
 <!doctype html>
 <html lang="it">
-<head><meta charset="utf-8"><style>body{font:13px system-ui,sans-serif;margin:12px;width:220px}button{margin-top:8px;padding:6px 10px}</style></head>
+<head><meta charset="utf-8"><style>
+  body { font: 13px system-ui, sans-serif; margin: 12px; width: 270px; }
+  #st { font-weight: 600; padding: 6px 8px; border-radius: 6px; margin: 8px 0 4px; }
+  .ok { background: #e6f7ec; color: #137333; }
+  .bad { background: #fde8e8; color: #c5221f; }
+  .warn { background: #fef7e0; color: #b06000; }
+  .muted { color: #666; font-size: 12px; word-break: break-all; min-height: 16px; }
+  button { margin: 10px 6px 0 0; padding: 6px 10px; }
+</style></head>
 <body>
   <b>AutoJob Bridge</b>
-  <p>Configura token e URL del daemon nelle opzioni. Il badge rosso/ambra segnala le posizioni gia candidate.</p>
+  <div id="st" class="warn">verifico…</div>
+  <div class="muted" id="detail"></div>
+  <button id="reconnect">Riconnetti</button>
   <button id="opt">Opzioni</button>
-  <script>document.getElementById("opt").addEventListener("click", () => chrome.runtime.openOptionsPage());</script>
+  <script src="popup.js"></script>
 </body>
 </html>
