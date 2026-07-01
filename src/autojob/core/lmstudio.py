@@ -72,7 +72,12 @@ class LMStudioManager:
                     self._loaded.add(model)
                     result["model"] = "already_loaded"
                 else:
-                    rc, out, err = await self._cmd("load", model, "-y")
+                    load_args = ["load", model, "-y"]
+                    if s.lms_context_length and "embed" not in _norm(model):
+                        load_args += ["-c", str(s.lms_context_length)]
+                    if s.lms_gpu:
+                        load_args += ["--gpu", s.lms_gpu]
+                    rc, out, err = await self._cmd(*load_args)
                     if rc == 0:
                         self._loaded.add(model)
                         self._we_loaded.add(model)

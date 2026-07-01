@@ -182,11 +182,11 @@ async def normalize_cv(
         raw_md = parse_cv(path)["raw_md"]
     client = client or get_llm_client()
     messages = [
-        LLMMessage("system", _SYS),
+        LLMMessage("system", "/no_think\n" + _SYS),
         LLMMessage("user", f"{_SCHEMA_HINT}\n\n--- CV TEXT ---\n{raw_md}"),
     ]
     try:
-        raw, data = await client.chat_json(messages, temperature=0.0, max_tokens=4000)
+        raw, data = await client.chat_json(messages, temperature=0.0, max_tokens=16000)
     except LLMUnavailable as e:
         return {"ok": False, "reason": "llm_unavailable", "message": str(e), "raw_chars": len(raw_md)}
     if not isinstance(data, dict):

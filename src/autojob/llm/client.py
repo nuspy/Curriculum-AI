@@ -40,7 +40,7 @@ def extract_json(text: str):
     """Estrae il primo oggetto/array JSON da una risposta LLM (tollerante ai code-fence)."""
     if not text:
         return None
-    t = text.strip()
+    t = re.sub(r"(?is)<think>.*?</think>", "", text).strip()  # rimuove reasoning dei modelli think
     if t.startswith("```"):
         t = re.sub(r"^```[a-zA-Z0-9]*\n?", "", t)
         t = re.sub(r"\n?```$", "", t).strip()
@@ -62,7 +62,7 @@ class LLMClient:
         base_url: str | None = None,
         api_key: str | None = None,
         model: str | None = None,
-        timeout: float = 120.0,
+        timeout: float = 300.0,
     ):
         s = get_settings()
         self.base_url = (base_url or s.llm_base_url).rstrip("/")
@@ -77,7 +77,7 @@ class LLMClient:
         """Autostart LM Studio + modello, se abilitato e provider locale. Best-effort."""
         s = get_settings()
         if s.lms_autostart and s.llm_provider == "lm_studio":
-            from .lmstudio import manager
+            from ..core.lmstudio import manager
 
             await manager.ensure_loaded(self.model, force=force)
             return True
@@ -130,8 +130,13 @@ class LLMClient:
         )
 
     async def chat_json(self, messages: list[LLMMessage], **kwargs):
-        """Come ``chat`` ma chiede e parsa JSON. Ritorna (raw_text, parsed_or_None)."""
-        kwargs.setdefault("response_format", {"type": "json_object"})
+        """Come ``chat`` ma parsa JSON dalla risposta (tollerante).
+
+        NON forza ``response_format``: molti runtime (LM Studio incluso) rifiutano
+        ``json_object`` (accettano solo ``json_schema``/``text``). Si affida al prompt
+        ("Output ONLY JSON") + ``extract_json``. Un ``response_format`` esplicito è comunque
+        passabile via kwargs se il backend lo supporta.
+        """
         res = await self.chat(messages, **kwargs)
         return res.content, extract_json(res.content)
 

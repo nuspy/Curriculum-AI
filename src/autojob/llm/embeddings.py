@@ -40,7 +40,7 @@ class EmbeddingsClient:
     async def _ensure_lms(self, *, force: bool = False) -> bool:
         s = get_settings()
         if s.lms_autostart and "1234" in (self.base_url or ""):
-            from .lmstudio import manager
+            from ..core.lmstudio import manager
 
             await manager.ensure_loaded(self.model, force=force)
             return True

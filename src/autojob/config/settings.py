@@ -54,6 +54,10 @@ class Settings(BaseSettings):
     lms_autostart: bool = True
     lms_cli: str = "lms"
     lms_model: str = ""  # modello chat da caricare; fallback su llm_model
+    # Caricamento modello: contesto ridotto (la KV-cache a 262k satura la VRAM → offload → lentezza)
+    # e full GPU offload. 0/"" = usa i default di LM Studio.
+    lms_context_length: int = 32768
+    lms_gpu: str = "max"
     idle_shutdown_enabled: bool = True
     idle_shutdown_minutes: int = 30
 
