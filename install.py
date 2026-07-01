@@ -13,6 +13,8 @@ Uso tipico (da dentro la cartella del repo):
 from __future__ import annotations
 
 import argparse
+import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -80,6 +82,73 @@ def launch_browser(ext_dir: Path) -> None:
         print(f'   chrome.exe --load-extension="{ext_dir}" --remote-debugging-port=9222')
 
 
+def _detect_cv() -> str | None:
+    """Cerca un CV nelle cartelle utente comuni (best-effort)."""
+    home = Path.home()
+    hits: list[Path] = []
+    for d in (home / "Documents", home / "Desktop", home / "Downloads"):
+        if not d.exists():
+            continue
+        for pat in ("*cv*", "*resume*", "*curriculum*"):
+            for ext in ("pdf", "docx"):
+                hits += [p for p in d.glob(f"{pat}.{ext}") if p.is_file()]
+    if not hits:
+        return None
+    return str(max(hits, key=lambda p: p.stat().st_mtime))
+
+
+def ensure_env(driver: str) -> None:
+    """Genera/aggiorna .env in automatico (browser driver + CV rilevato)."""
+    env = REPO / ".env"
+    lines = env.read_text(encoding="utf-8").splitlines() if env.exists() else [
+        "# AutoJob — configurazione (generata da install.py)"
+    ]
+
+    def upsert(key: str, val: str) -> None:
+        for i, ln in enumerate(lines):
+            if ln.strip().startswith(key + "="):
+                lines[i] = f"{key}={val}"
+                return
+        lines.append(f"{key}={val}")
+
+    upsert("AUTOJOB_BROWSER_DRIVER", driver)
+    cv = _detect_cv()
+    if cv:
+        upsert("AUTOJOB_CV_PATH", cv.replace("\\", "/"))
+    env.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    step(f".env aggiornato (AUTOJOB_BROWSER_DRIVER={driver}{', CV rilevato' if cv else ''})")
+
+
+def wire_hermes_mcp() -> None:
+    """Registra il server MCP AutoJob nel config.yaml di Hermes (se presente), preservando i commenti."""
+    localapp = Path(os.environ.get("LOCALAPPDATA", str(Path.home() / "AppData" / "Local")))
+    roaming = Path(os.environ.get("APPDATA", str(Path.home() / "AppData" / "Roaming")))
+    candidates = [
+        localapp / "hermes" / "config.yaml",
+        Path.home() / ".hermes" / "config.yaml",
+        roaming / "hermes" / "config.yaml",
+    ]
+    cfg = next((c for c in candidates if c.exists()), None)
+    if not cfg:
+        return  # Hermes non installato: nulla da fare
+    text = cfg.read_text(encoding="utf-8")
+    if "127.0.0.1:8765/mcp" in text:
+        step("Hermes: MCP autojob già presente")
+        return
+    block = (
+        "  autojob:\n"
+        "    url: http://127.0.0.1:8765/mcp/\n"
+        "    timeout: 120\n"
+        "    connect_timeout: 60\n"
+    )
+    if re.search(r"(?m)^mcp_servers:[ \t]*$", text):
+        text = re.sub(r"(?m)^(mcp_servers:[ \t]*\n)", r"\1" + block, text, count=1)
+    else:
+        text = text.rstrip() + "\n\nmcp_servers:\n" + block
+    cfg.write_text(text, encoding="utf-8")
+    step(f"Hermes: MCP autojob registrato in {cfg}")
+
+
 def check() -> int:
     step("CHECK ambiente (nessuna modifica)")
     items = {
@@ -133,6 +202,10 @@ def install(args: argparse.Namespace) -> int:
             print("   Per scope utente: claude mcp add --transport http autojob "
                   "http://127.0.0.1:8765/mcp/ --scope user")
 
+    # Config automatica: .env (driver + CV) e MCP in Hermes — nessun passo manuale.
+    ensure_env(args.browser_driver)
+    wire_hermes_mcp()
+
     if not args.no_daemon:
         step("avvio daemon (autojob up)…")
         run(["uv", "run", "autojob", "up"])
@@ -163,7 +236,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     p.add_argument(
         "--mcp-scope", choices=["user", "project", "none"], default="user",
-        help="scope di registrazione del server MCP (default: user)",
+        help="scope di registrazione del server MCP in Claude Code (default: user)",
+    )
+    p.add_argument(
+        "--browser-driver", choices=["extension", "playwright", "fake"], default="extension",
+        help="driver browser scritto nel .env (default: extension)",
     )
     args = p.parse_args(argv)
     return check() if args.check else install(args)

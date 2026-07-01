@@ -1,0 +1,11 @@
+# Manifest plugin nativo Hermes (riconosciuto da `hermes plugins install`).
+# NB: i tool di AutoJob arrivano dal server MCP (http://127.0.0.1:8765/mcp/), che va
+# registrato in Hermes separatamente — install.py lo fa in automatico (config.yaml: mcp_servers.autojob).
+manifest_version: 1
+name: autojob
+version: 0.1.0
+description: "AutoJob — ricerca/valutazione/compilazione candidature in locale via MCP."
+author: "Andrea Taini"
+kind: standalone
+provides_tools: []
+requires_env: []
