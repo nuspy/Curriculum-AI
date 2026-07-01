@@ -1,20 +1,23 @@
 <!doctype html>
 <html lang="it">
 <head><meta charset="utf-8"><style>
-  body { font: 13px system-ui, sans-serif; margin: 12px; width: 270px; }
+  body { font: 13px system-ui, sans-serif; margin: 12px; width: 280px; }
   #st { font-weight: 600; padding: 6px 8px; border-radius: 6px; margin: 8px 0 4px; }
   .ok { background: #e6f7ec; color: #137333; }
   .bad { background: #fde8e8; color: #c5221f; }
   .warn { background: #fef7e0; color: #b06000; }
-  .muted { color: #666; font-size: 12px; word-break: break-all; min-height: 16px; }
-  button { margin: 10px 6px 0 0; padding: 6px 10px; }
+  .muted { color: #666; font-size: 12px; word-break: break-all; min-height: 14px; margin: 2px 0; }
+  #fill { width: 100%; padding: 9px; margin: 8px 0 2px; font-weight: 600; background: #1a73e8; color: #fff; border: 0; border-radius: 6px; cursor: pointer; }
+  #fill:disabled { background: #b7c6dd; cursor: default; }
+  .row button { margin: 8px 6px 0 0; padding: 5px 9px; }
 </style></head>
 <body>
   <b>AutoJob Bridge</b>
   <div id="st" class="warn">verifico…</div>
   <div class="muted" id="detail"></div>
-  <button id="reconnect">Riconnetti</button>
-  <button id="opt">Opzioni</button>
+  <button id="fill" disabled>✍️ Compila questo form</button>
+  <div class="muted" id="fillres"></div>
+  <div class="row"><button id="reconnect">Riconnetti</button><button id="opt">Opzioni</button></div>
   <script src="popup.js"></script>
 </body>
 </html>

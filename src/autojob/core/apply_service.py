@@ -152,6 +152,50 @@ async def fill_application(job_id: int, *, autosubmit: bool = False, driver=None
     }
 
 
+async def autofill_active_form(driver=None) -> dict:
+    """Compila il form della pagina ATTIVA col profilo, senza richiedere un job_id.
+
+    È il "compila con un click" dell'estensione: snapshot → analyze_form →
+    map_profile_to_form → compila i campi. Non invia mai (submit resta all'utente).
+    """
+    drv = driver or await get_session_driver()
+    snap = await drv.get_snapshot()
+    fm = analyze_form(snap)
+    prof = profile_service.get_profile()
+    cv = str(get_settings().cv_path) if get_settings().cv_path else None
+    plans = map_profile_to_form(fm, prof, cv_path=cv)
+
+    filled, errors = [], []
+    needs_user = [p for p in plans if p.get("needs_user")]
+    for p in plans:
+        if p.get("needs_user") or p.get("action") in (None, "skip"):
+            continue
+        idx, act = p["index"], p["action"]
+        try:
+            if act == "fill":
+                r = await drv.fill(idx, str(p["value"]))
+            elif act == "select":
+                r = await drv.select_option(idx, value=p.get("value"), label=p.get("label_value"))
+            elif act == "check":
+                r = await drv.set_checkbox(idx, bool(p["value"]))
+            elif act == "upload":
+                r = await drv.upload_file(idx, [p["value"]])
+            else:
+                continue
+            (filled if r.ok else errors).append(
+                {"index": idx, "label": p.get("label"), "source": p.get("source"), "ok": r.ok}
+            )
+        except Exception as e:  # noqa: BLE001
+            errors.append({"index": idx, "error": str(e)[:150]})
+
+    return {
+        "ok": True, "url": fm.get("url"), "field_count": fm.get("field_count"),
+        "filled": filled, "filled_count": len(filled), "errors": errors,
+        "needs_user": [{"label": p.get("label"), "reason": p.get("reason")} for p in needs_user],
+        "submit_index": fm.get("submit_index"), "submitted": False,
+    }
+
+
 async def add_repeating_section(section_type: str = "", driver=None) -> dict:
     drv = driver or await get_session_driver()
     fm = analyze_form(await drv.get_snapshot())

@@ -218,6 +218,11 @@ def build_mcp() -> FastMCP:
         return await apply_service.fill_application(job_id, autosubmit=autosubmit)
 
     @mcp.tool
+    async def autofill_active_form() -> dict:
+        """Compila il form della pagina attiva col profilo, senza job_id (un click). Non invia."""
+        return await apply_service.autofill_active_form()
+
+    @mcp.tool
     async def add_repeating_section(section_type: str = "") -> dict:
         """Aggiunge una sezione ripetuta ('Add experience/education/language') e verifica."""
         return await apply_service.add_repeating_section(section_type)

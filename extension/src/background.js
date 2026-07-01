@@ -173,6 +173,7 @@ function onAppliedStatus(msg) {
 
 // ---- WS lifecycle ----
 let lastError = "";
+let lastAutofill = null;
 async function connect() {
   const { token, url } = await cfg();
   if (!token) { lastError = "token mancante"; console.log("[AutoJob] token mancante: aprire le opzioni"); return; }
@@ -184,6 +185,7 @@ async function connect() {
     if (msg.type === "auth_ok") { connected = true; lastError = ""; backoff = 1000; console.log("[AutoJob] connesso al daemon"); }
     else if (msg.type === "auth_err") { connected = false; lastError = "token errato"; console.warn("[AutoJob] auth fallita:", msg.payload); }
     else if (msg.type === "applied_status") onAppliedStatus(msg);
+    else if (msg.type === "autofill_result") { lastAutofill = msg.payload; console.log("[AutoJob] autofill:", msg.payload); }
     else if (typeof msg.type === "string" && msg.type.startsWith("cmd.")) handleCommand(msg);
   };
   ws.onclose = () => { connected = false; if (!lastError || lastError === "connessione in corso…") lastError = "daemon non raggiungibile su " + url; scheduleReconnect(); };
@@ -198,7 +200,13 @@ function scheduleReconnect() {
 // Stato per il popup (auto-diagnosi)
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg && msg.type === "status") {
-    cfg().then((c) => sendResponse({ connected, hasToken: !!c.token, url: c.url, wsState: ws ? ws.readyState : -1, lastError }));
+    cfg().then((c) => sendResponse({ connected, hasToken: !!c.token, url: c.url, wsState: ws ? ws.readyState : -1, lastError, lastAutofill }));
+    return true;
+  }
+  if (msg && msg.type === "autofill") {
+    lastAutofill = { pending: true };
+    send({ v: 1, id: "af-" + Date.now(), type: "autofill_request", payload: {} });
+    sendResponse({ ok: connected });
     return true;
   }
   if (msg && msg.type === "reconnect") {

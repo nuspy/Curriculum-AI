@@ -6,6 +6,8 @@ Handshake a token, instradamento risposte per ``corr``, e gestione eventi
 
 from __future__ import annotations
 
+import asyncio
+
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from ..utils.logging import get_logger
@@ -61,6 +63,24 @@ async def ext_ws(ws: WebSocket) -> None:
                     type=pl.get("kind", "captcha"),
                     prompt=pl.get("hint") or pl.get("url") or "intervento richiesto",
                 )
+            elif mtype == "autofill_request":
+                # "Compila con un click" dal popup: gira in task per non bloccare il loop
+                # che riceve gli esiti dei comandi (cmd.get_snapshot/cmd.action).
+                af_id = msg.get("id")
+
+                async def _autofill(_id=af_id):
+                    from ..core.apply_service import autofill_active_form
+
+                    try:
+                        res = await autofill_active_form()
+                    except Exception as e:  # noqa: BLE001
+                        res = {"ok": False, "error": str(e)[:300]}
+                    try:
+                        await ws.send_json({"type": "autofill_result", "corr": _id, "payload": res})
+                    except Exception:  # noqa: BLE001
+                        pass
+
+                asyncio.create_task(_autofill())
             elif mtype == "ping":
                 await ws.send_json({"type": "pong", "payload": {}})
             # snapshot/action_result/dom_changed/target_opened non correlati: ignorati
