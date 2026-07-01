@@ -75,6 +75,11 @@ class ExtensionDriver:
     async def navigate(self, url: str, *, wait: bool = True) -> ActionResult:
         return _ar(await self._cmd("cmd.navigate", {"url": url, "wait": wait}))
 
+    async def open_tab(self, url: str) -> TargetInfo | None:
+        """Apre l'URL in una NUOVA scheda (una per candidatura) e attende il caricamento."""
+        r = await self._cmd("cmd.open_tab", {"url": url})
+        return _ti({"target_id": r.get("target_id"), "url": r.get("url"), "type": "tab", "active": True})
+
     async def current_url(self) -> str:
         return (await self._cmd("cmd.current_url")).get("url", "")
 

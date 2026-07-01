@@ -79,6 +79,18 @@ async function handleCommand(msg) {
         await chrome.tabs.update(tabId, { url: p.url });
         payload = { ok: true, message: "navigated" };
         break;
+      case "cmd.open_tab": {
+        const nt = await chrome.tabs.create({ url: p.url, active: true });
+        activeTabId = nt.id;
+        await new Promise((res) => {
+          const lsn = (id, info) => { if (id === nt.id && info.status === "complete") { try { chrome.tabs.onUpdated.removeListener(lsn); } catch (e) {} res(); } };
+          chrome.tabs.onUpdated.addListener(lsn);
+          setTimeout(() => { try { chrome.tabs.onUpdated.removeListener(lsn); } catch (e) {} res(); }, 15000);
+        });
+        let cur = nt; try { cur = await chrome.tabs.get(nt.id); } catch (e) {}
+        payload = { target_id: String(nt.id), url: cur ? cur.url : p.url };
+        break;
+      }
       case "cmd.list_targets": {
         const tabs = await chrome.tabs.query({});
         payload = { targets: tabs.map((t) => ({ target_id: String(t.id), type: "tab", url: t.url, title: t.title, active: t.id === tabId })) };

@@ -223,6 +223,12 @@ def build_mcp() -> FastMCP:
         return await apply_service.autofill_active_form()
 
     @mcp.tool
+    async def prepare_applications(urls: list[str], reapply: bool = False) -> dict:
+        """Apre ogni annuncio in una scheda e ne compila il form (NON invia).
+        Salta i già-candidati (duplicate-guard) salvo reapply=True. Passa URL già filtrati."""
+        return await apply_service.prepare_applications(urls, reapply=reapply)
+
+    @mcp.tool
     async def add_repeating_section(section_type: str = "") -> dict:
         """Aggiunge una sezione ripetuta ('Add experience/education/language') e verifica."""
         return await apply_service.add_repeating_section(section_type)

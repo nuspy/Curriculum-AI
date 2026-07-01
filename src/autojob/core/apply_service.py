@@ -196,6 +196,48 @@ async def autofill_active_form(driver=None) -> dict:
     }
 
 
+async def prepare_applications(items, *, reapply: bool = False, driver=None) -> dict:
+    """Apre ogni annuncio in una scheda e ne compila il form; **non invia** (submit all'utente).
+
+    ``items``: lista di URL (o dict con ``url``). Per ciascuno controlla il duplicate-guard
+    (``check_application_status``) e **salta i già-candidati** salvo ``reapply=True``.
+    """
+    from .application_service import check_application_status
+
+    drv = driver or await get_session_driver()
+    prepared, skipped, errors = [], [], []
+    for it in items or []:
+        url = it if isinstance(it, str) else (it or {}).get("url")
+        if not url:
+            continue
+        try:
+            st = check_application_status({"url": url})
+            if st.get("state") == "submitted" and not reapply:
+                skipped.append({"url": url, "reason": "already_applied",
+                                "strength": st.get("strength"), "details": st.get("details")})
+                continue
+            target = None
+            if hasattr(drv, "open_tab"):
+                ti = await drv.open_tab(url)
+                target = ti.target_id if ti else None
+                if target:
+                    await drv.switch_target(target)
+            else:
+                await drv.navigate(url)
+            await drv.wait_for_dom_change(timeout_ms=2500)
+            res = await autofill_active_form(driver=drv)
+            prepared.append({"url": url, "target_id": target,
+                             "filled_count": res.get("filled_count"),
+                             "needs_user": res.get("needs_user"),
+                             "submit_index": res.get("submit_index")})
+        except Exception as e:  # noqa: BLE001
+            errors.append({"url": url, "error": str(e)[:200]})
+
+    return {"ok": True, "prepared_count": len(prepared), "prepared": prepared,
+            "skipped_already_applied": skipped, "errors": errors,
+            "note": "Rivedi ogni scheda e invia tu (submit_mode manual)."}
+
+
 async def add_repeating_section(section_type: str = "", driver=None) -> dict:
     drv = driver or await get_session_driver()
     fm = analyze_form(await drv.get_snapshot())
